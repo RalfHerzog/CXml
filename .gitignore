@@ -1,0 +1,8 @@
+.codelite/
+*.d
+*.o
+CXml
+*.mk
+*.project
+*.txt
+*.workspace
