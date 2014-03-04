@@ -35,13 +35,13 @@ PreprocessOnlySwitch   :=-E
 ObjectsFileList        :="CXml.txt"
 PCHCompileFlags        :=
 MakeDirCommand         :=mkdir -p
-LinkOptions            :=  
-IncludePath            :=  $(IncludeSwitch). $(IncludeSwitch). 
+LinkOptions            :=  -lz -lm -lsqlite3
+IncludePath            :=  $(IncludeSwitch). $(IncludeSwitch). $(IncludeSwitch)../include/colibro/include $(IncludeSwitch)../include/colibro/extern/polarssl/include 
 IncludePCH             := 
 RcIncludePath          := 
-Libs                   := 
-ArLibs                 :=  
-LibPath                := $(LibraryPathSwitch). 
+Libs                   := $(LibrarySwitch)colibro 
+ArLibs                 :=  "colibro" 
+LibPath                := $(LibraryPathSwitch). $(LibraryPathSwitch)../include/colibro/lib $(LibraryPathSwitch)../include/colibro/extern/polarss/lib 
 
 ##
 ## Common variables
@@ -60,7 +60,7 @@ AS       := as
 ## User defined environment variables
 ##
 CodeLiteDir:=/usr/share/codelite
-Objects0=$(IntermediateDirectory)/main$(ObjectSuffix) $(IntermediateDirectory)/CXml$(ObjectSuffix) 
+Objects0=$(IntermediateDirectory)/CXml$(ObjectSuffix) $(IntermediateDirectory)/examples_stupo_filme$(ObjectSuffix) 
 
 
 
@@ -87,14 +87,6 @@ PreBuild:
 ##
 ## Objects
 ##
-$(IntermediateDirectory)/main$(ObjectSuffix): main.c $(IntermediateDirectory)/main$(DependSuffix)
-	$(CC) $(SourceSwitch) "/home/ralf/Projects/CXml/main.c" $(CFLAGS) $(ObjectSwitch)$(IntermediateDirectory)/main$(ObjectSuffix) $(IncludePath)
-$(IntermediateDirectory)/main$(DependSuffix): main.c
-	@$(CC) $(CFLAGS) $(IncludePath) -MG -MP -MT$(IntermediateDirectory)/main$(ObjectSuffix) -MF$(IntermediateDirectory)/main$(DependSuffix) -MM "main.c"
-
-$(IntermediateDirectory)/main$(PreprocessSuffix): main.c
-	@$(CC) $(CFLAGS) $(IncludePath) $(PreprocessOnlySwitch) $(OutputSwitch) $(IntermediateDirectory)/main$(PreprocessSuffix) "main.c"
-
 $(IntermediateDirectory)/CXml$(ObjectSuffix): CXml.c $(IntermediateDirectory)/CXml$(DependSuffix)
 	$(CC) $(SourceSwitch) "/home/ralf/Projects/CXml/CXml.c" $(CFLAGS) $(ObjectSwitch)$(IntermediateDirectory)/CXml$(ObjectSuffix) $(IncludePath)
 $(IntermediateDirectory)/CXml$(DependSuffix): CXml.c
@@ -103,18 +95,26 @@ $(IntermediateDirectory)/CXml$(DependSuffix): CXml.c
 $(IntermediateDirectory)/CXml$(PreprocessSuffix): CXml.c
 	@$(CC) $(CFLAGS) $(IncludePath) $(PreprocessOnlySwitch) $(OutputSwitch) $(IntermediateDirectory)/CXml$(PreprocessSuffix) "CXml.c"
 
+$(IntermediateDirectory)/examples_stupo_filme$(ObjectSuffix): examples/stupo_filme.c $(IntermediateDirectory)/examples_stupo_filme$(DependSuffix)
+	$(CC) $(SourceSwitch) "/home/ralf/Projects/CXml/examples/stupo_filme.c" $(CFLAGS) $(ObjectSwitch)$(IntermediateDirectory)/examples_stupo_filme$(ObjectSuffix) $(IncludePath)
+$(IntermediateDirectory)/examples_stupo_filme$(DependSuffix): examples/stupo_filme.c
+	@$(CC) $(CFLAGS) $(IncludePath) -MG -MP -MT$(IntermediateDirectory)/examples_stupo_filme$(ObjectSuffix) -MF$(IntermediateDirectory)/examples_stupo_filme$(DependSuffix) -MM "examples/stupo_filme.c"
+
+$(IntermediateDirectory)/examples_stupo_filme$(PreprocessSuffix): examples/stupo_filme.c
+	@$(CC) $(CFLAGS) $(IncludePath) $(PreprocessOnlySwitch) $(OutputSwitch) $(IntermediateDirectory)/examples_stupo_filme$(PreprocessSuffix) "examples/stupo_filme.c"
+
 
 -include $(IntermediateDirectory)/*$(DependSuffix)
 ##
 ## Clean
 ##
 clean:
-	$(RM) $(IntermediateDirectory)/main$(ObjectSuffix)
-	$(RM) $(IntermediateDirectory)/main$(DependSuffix)
-	$(RM) $(IntermediateDirectory)/main$(PreprocessSuffix)
 	$(RM) $(IntermediateDirectory)/CXml$(ObjectSuffix)
 	$(RM) $(IntermediateDirectory)/CXml$(DependSuffix)
 	$(RM) $(IntermediateDirectory)/CXml$(PreprocessSuffix)
+	$(RM) $(IntermediateDirectory)/examples_stupo_filme$(ObjectSuffix)
+	$(RM) $(IntermediateDirectory)/examples_stupo_filme$(DependSuffix)
+	$(RM) $(IntermediateDirectory)/examples_stupo_filme$(PreprocessSuffix)
 	$(RM) $(OutputFile)
 	$(RM) ".build-debug/CXml"
 

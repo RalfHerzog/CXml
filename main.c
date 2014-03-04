@@ -1,16 +1,31 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <time.h>
 
+#include "colibro.h"
 #include "CXml.h"
 
 unsigned long load_file( const char* file, unsigned char** file_contents );
 
+unsigned int timestamp_to_time( time_t time, char** time_str )
+{
+	struct tm *tmp;
+	
+	tmp = localtime( &time );
+	*time_str = (char*)malloc( 256 );
+	
+	return strftime( *time_str, 256, "%H:%M:%S", tmp );
+}
+
 void parse_ITEM( struct CXml* cxml )
 {
-	unsigned char *title;
-	unsigned char *begin;
-	unsigned char *end;
+	unsigned char *title = NULL;
+	unsigned char *begin = NULL;
+	unsigned char *end = NULL;
+	unsigned char *station = NULL;
+	char *time_start = NULL;
+	char *time_end = NULL;
 	
 	while( 
 		CXml_next_tag( cxml ) && 
@@ -25,21 +40,32 @@ void parse_ITEM( struct CXml* cxml )
 		{
 			title = CXml_get_text( cxml );
 		}
-		if ( cxml->current_tag->name != NULL && strcmp( (char*)cxml->current_tag->name, "NICEBEGIN" ) == 0 )
+		if ( cxml->current_tag->name != NULL && strcmp( (char*)cxml->current_tag->name, "STATION" ) == 0 )
+		{
+			station = CXml_get_text( cxml );
+		}
+		if ( cxml->current_tag->name != NULL && strcmp( (char*)cxml->current_tag->name, "BEGIN" ) == 0 )
 		{
 			begin = CXml_get_text( cxml );
+			timestamp_to_time( atoi( (char*)begin ), &time_start );
 		}
-		if ( cxml->current_tag->name != NULL && strcmp( (char*)cxml->current_tag->name, "NICEEND" ) == 0 )
+		if ( cxml->current_tag->name != NULL && strcmp( (char*)cxml->current_tag->name, "END" ) == 0 )
 		{
 			end = CXml_get_text( cxml );
+			timestamp_to_time( atoi( (char*)end ), &time_end );
 		}
 	}
 	
-	printf( "%s\n%s bis %s\n\n", title, begin, end );
+	printf( "%s (%s)\n%s bis %s\n\n", title, station, time_start, time_end );
 	fflush( stdout );
+	
 	free( title );
+	free( station );
 	free( begin );
 	free( end );
+	
+	free( time_start );
+	free( time_end );
 }
 
 void parse_OTR( struct CXml* cxml )
@@ -59,22 +85,36 @@ void parse_OTR( struct CXml* cxml )
 
 int main( int argc, char **argv )
 {
-	char *xml_file = "input.xml";
 	unsigned char *file_contents;
-	unsigned long file_size;
+	int file_size;
 	struct CXml* cxml;
+	struct HTTP http;
 	
-	file_size = load_file( xml_file, &file_contents );
+	#ifdef XML_LOCAL
+		char *xml_file = "input.xml";
+		
+		file_size = load_file( xml_file, &file_contents );
+		if ( file_contents == NULL )
+		{
+			fprintf( stderr, "No such file '%s'\n", xml_file );
+			return -1;
+		}
+		if ( file_size == 0 )
+		{
+			fprintf( stderr, "Empty file '%s'\n", xml_file );
+			return -1;
+		}
+	#else
+		http_get_page( &http, "http://www.onlinetvrecorder.com/rss/toprecordings_germany.xml", (char**)&file_contents, &file_size );
+	#endif
+	
+	http_init( &http );
 	if ( file_contents == NULL )
 	{
-		fprintf( stderr, "No such file '%s'\n", xml_file );
+		fprintf( stderr, "No contents\n" );
 		return -1;
 	}
-	if ( file_size == 0 )
-	{
-		fprintf( stderr, "Empty file '%s'\n", xml_file );
-		return -1;
-	}
+	
 	cxml = CXml_parse( file_contents, file_size );
 	
 	// Skip xml-definition
@@ -83,6 +123,7 @@ int main( int argc, char **argv )
 	CXml_free( cxml );
 	
 	free( file_contents );
+	http_free( &http );
 	
 	return 0;
 }

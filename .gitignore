@@ -5,3 +5,5 @@ CXml
 *.project
 *.txt
 *.workspace
+*.db
+examples/
